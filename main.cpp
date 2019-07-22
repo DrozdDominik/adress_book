@@ -5,10 +5,190 @@
 
 using namespace std;
 
+struct User {
+    int id;
+    string name, password;
+};
+
 struct Contact {
     int id;
     string name, surname, phoneNumber, email, adress;
 };
+
+vector<User> loadUsers(vector<User> users) {
+    string line;
+    int lineNumber = 1;
+    fstream file;
+    User singleUser;
+
+    file.open("users.txt", ios::in);
+
+    if(file.is_open()) {
+        while(getline(file,line)) {
+            string user[3];
+            int endOfString = line.length();
+            int index = 0;
+            int beginOfWord = 0;
+            int lengthOfWord = 0;
+            int userIndex = 0;
+
+            for(index = 0; index < endOfString; index++) {
+
+                if((int)line[index] == 124) {
+                    lengthOfWord = index - beginOfWord;
+                    user[userIndex] = line.substr(beginOfWord, lengthOfWord);
+                    beginOfWord = index + 1;
+                    userIndex++;
+                }
+            }
+            singleUser.id = atoi(user[0].c_str());
+            singleUser.name = user[1];
+            singleUser.password = user[2];
+
+            users.push_back(singleUser);
+
+        }
+        file.close();
+
+        return users;
+    } else {
+        file.close();
+        return users;
+    }
+}
+
+vector <User> registration(vector <User> users) {
+    User singleUser;
+    fstream file;
+    string name, password;
+
+    file.open("users.txt");
+    if(file.good()) {
+        file.close();
+    } else {
+        file.open("users.txt", ios::out);
+        file.close();
+    }
+
+    cout << "Podaj nazwe uzytkownika: ";
+    cin >> name;
+
+    int i = 0;
+    while(i < users.size()) {
+        if(users[i].name == name) {
+            cout << "Taki uzytkownik istnieje. Wpisz inna nazwe uzytkownika: ";
+            cin >> name;
+            i = 0;
+        } else {
+            i++;
+        }
+    }
+    cout << "Podaj haslo: ";
+    cin >> password;
+
+    int numberOfUsers = users.size();
+    int lastId;
+    if(users.empty()) {
+        lastId = 0;
+    } else {
+        lastId = users[numberOfUsers - 1].id;
+    }
+
+    singleUser = {lastId + 1, name, password};
+
+    users.push_back(singleUser);
+
+    file.open("users.txt", ios::out | ios::app);
+    if(file.good()) {
+        file << users[numberOfUsers].id << "|";
+        file << users[numberOfUsers].name << "|";
+        file << users[numberOfUsers].password << "|" << endl;
+        cout << "Konto zalozone" << endl;
+        file.close();
+
+        Sleep(1000);
+        return users;
+    } else {
+        cout << "Nie udalo sie otworzyc pliku" << endl;
+        Sleep(1000);
+        exit(0);
+    }
+
+}
+
+int LogIn (vector <User> users) {
+    string name, password;
+    cout << "Podaj login: ";
+    cin >> name;
+
+    int i = 0;
+    while(i < users.size()) {
+        if(users[i].name == name) {
+            for(int attempts = 0; attempts < 3; attempts++) {
+                cout << "Podaj haslo. Pozostalo prob " << 3-attempts << ": ";
+                cin >> password;
+                if(users[i].password == password) {
+                    cout << "Zalogowales sie." << endl;
+                    Sleep(1000);
+                    return users[i].id;
+                }
+            }
+            cout << "Podales 3 razy bledne haslo. Poczekaj 3 sekundy przed kolejna proba" << endl;
+            Sleep(3000);
+            return 0;
+        }
+        i++;
+    }
+    cout << "Nie ma uzytkownika z takim loginem" << endl;
+    Sleep(1500);
+    return 0;
+}
+
+vector<User> editPassword(vector<User> users, int idToEdit) {
+    fstream file;
+
+    int indexToEdit;
+    string newPassword;
+    cout << "Podaj nowe haslo: ";
+    cin >> newPassword;
+    for(int i = 0; i < users.size(); i++) {
+        if(users[i].id == idToEdit) {
+            indexToEdit = i;
+        }
+    }
+    users[indexToEdit].password = newPassword;
+
+    file.open("users.txt", ios::out);
+    if(file.good()) {
+        if(idToEdit > 1) {
+            for(int i = 0; i < indexToEdit; i++) {
+                file << users[i].id << "|";
+                file << users[i].name << "|";
+                file << users[i].password << "|" << endl;
+            }
+        }
+        file << users[indexToEdit].id << "|";
+        file << users[indexToEdit].name << "|";
+        file << users[indexToEdit].password << "|" << endl;
+
+        if(indexToEdit + 1 < users.size()) {
+            for(int i = idToEdit; i < users.size(); i++) {
+                file << users[i].id << "|";
+                file << users[i].name << "|";
+                file << users[i].password << "|" << endl;
+            }
+        }
+        file.close();
+        cout << "Haslo zostalo zmienione" << endl;
+        Sleep(1500);
+        return users;
+    } else {
+        file.close();
+        cout << "Blad odczytu pliku!" << endl;
+        Sleep(1000);
+        return users;
+    }
+}
 
 vector<Contact> loadData(vector<Contact> contacts) {
     string line;
@@ -150,7 +330,6 @@ bool showAllContacts(vector<Contact> contacts) {
         while(choice !=1) {
             cout << "Aby powrocic do menu glownego wybierz 1 ";
             cin >> choice;
-
             if(choice == '1') {
                 return true;
             }
@@ -185,7 +364,6 @@ bool searchByName(vector<Contact> contacts) {
     while(choice !=1) {
         cout << "Aby powrocic do menu wyszukiwania wybierz 1 ";
         cin >> choice;
-
         if(choice == '1') {
             return true;
         }
@@ -219,7 +397,6 @@ bool searchBySurname(vector<Contact> contacts) {
     while(choice !=1) {
         cout << "Aby powrocic do menu wyszukiwania wybierz 1 ";
         cin >> choice;
-
         if(choice == '1') {
             return true;
         }
@@ -270,8 +447,8 @@ vector<Contact> deleteContact(vector<Contact> contacts, int idToDelete) {
                 rename("temp.txt", "contacts.txt");
 
                 int indexToDelete = 0;
-                for(int i = 0; i < contacts.size(); i++){
-                    if(contacts[i].id == idToDelete){
+                for(int i = 0; i < contacts.size(); i++) {
+                    if(contacts[i].id == idToDelete) {
                         indexToDelete = i;
                     }
                 }
@@ -390,104 +567,132 @@ vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice
 }
 
 int main() {
+    vector <User> users;
     vector<Contact> contacts;
+    int idLoggedUser = 0;
     int numberOfContacts = 0;
-    int isMenuActive = true;
-    int isEditMenuActive = true;
+    bool isMenuActive = true;
+    bool isEditMenuActive = false;
     char choice;
     int idToEdit;
     int idToDelete;
 
+    users = loadUsers(users);
+
     contacts = loadData(contacts);
 
+
     while(1) {
-        if(isMenuActive) {
+        if(idLoggedUser == 0) {
             system("cls");
-            cout << "1. Dodaj nowy kontakt" << endl;
-            cout << "2. Wyszukiwanie po imieniu" << endl;
-            cout << "3. Wyszukiwanie po nazwisku" << endl;
-            cout << "4. Wyswietl wszystkie kontakty" << endl;
-            cout << "5. Usun kontakt" << endl;
-            cout << "6. Edytuj kontakt" << endl;
+            cout << "1. Rejestracja" << endl;
+            cout << "2. Logowanie" << endl;
             cout << "9. Zakoncz program" << endl;
-            cout << "Twoj wybor: ";
             cin >> choice;
 
             if(choice == '1') {
-                contacts = addContact(contacts);
-            } else if(choice == '2') {
-                isMenuActive = searchByName(contacts);
-            } else if(choice == '3') {
-                isMenuActive = searchBySurname(contacts);
-            } else if(choice == '4') {
-                isMenuActive = showAllContacts(contacts);
-            } else if(choice == '5') {
-                system("cls");
-                cout << "Podaj id kontaktu: ";
-                cin >> idToDelete;
-                contacts = deleteContact(contacts, idToDelete);
-            } else if(choice == '6') {
-                system("cls");
-                cout << "Podaj id kontaktu: ";
-                cin >> idToEdit;
-                isMenuActive = isEdit(contacts, idToEdit);
-                isEditMenuActive = true;
-            } else if(choice == '9') {
+                users = registration(users);
+            } else if (choice == '2') {
+                idLoggedUser = LogIn(users);
+            } else if (choice == '9') {
                 exit(0);
             }
         } else {
-            while(isEditMenuActive) {
-                system("cls");
-                cout << "Edytuj:" << endl;
-                cout << "1. Imie" << endl;
-                cout << "2. Nazwisko" << endl;
-                cout << "3. Numer telefonu" << endl;
-                cout << "4. Email" << endl;
-                cout << "5. Adres" << endl;
-                cout << "6. Powrot do menu glownego" << endl;
-                cout << "Twoj wybor: ";
-                cin >> choice;
-                if(choice == '1') {
+            while(idLoggedUser != 0) {
+                if(isMenuActive) {
                     system("cls");
-                    string editName;
-                    cout << "Podaj nowe imie: ";
-                    cin >> editName;
-                    contacts = editConctact(contacts, idToEdit, choice, editName);
-                } else if (choice == '2') {
-                    system("cls");
-                    string editSurname;
-                    cout << "Podaj nowe nazwisko: ";
-                    cin >> editSurname;
-                    contacts = editConctact(contacts, idToEdit,choice,editSurname);
-                } else if (choice == '3') {
-                    system("cls");
-                    string editPhoneNumber;
-                    cout << "Podaj nowy numer telefonu: ";
-                    cin.ignore();
-                    getline(cin, editPhoneNumber);
-                    contacts = editConctact(contacts, idToEdit,choice,editPhoneNumber);
-                } else if (choice == '4') {
-                    system("cls");
-                    string editEmail;
-                    cout << "Podaj nowy email: ";
-                    cin >> editEmail;
-                    contacts = editConctact(contacts, idToEdit,choice,editEmail);
-                } else if (choice == '5') {
-                    system("cls");
-                    string editAdress;
-                    cout << "Podaj nowy adres: ";
-                    cin.ignore();
-                    getline(cin, editAdress);
-                    contacts = editConctact(contacts, idToEdit,choice,editAdress);
-                } else if (choice == '6') {
-                    contacts = contacts;
-                    isEditMenuActive = false;
-                    isMenuActive = true;
+                    cout << "1. Dodaj nowy kontakt" << endl;
+                    cout << "2. Wyszukiwanie po imieniu" << endl;
+                    cout << "3. Wyszukiwanie po nazwisku" << endl;
+                    cout << "4. Wyswietl wszystkie kontakty" << endl;
+                    cout << "5. Usun kontakt" << endl;
+                    cout << "6. Edytuj kontakt" << endl;
+                    cout << "7. Zmien haslo" << endl;
+                    cout << "8. Wyloguj sie" << endl;
+                    cout << "Twoj wybor: ";
+                    cin >> choice;
 
+                    if(choice == '1') {
+                        contacts = addContact(contacts);
+                    } else if(choice == '2') {
+                        isMenuActive = searchByName(contacts);
+                    } else if(choice == '3') {
+                        isMenuActive = searchBySurname(contacts);
+                    } else if(choice == '4') {
+                        isMenuActive = showAllContacts(contacts);
+                    } else if(choice == '5') {
+                        system("cls");
+                        cout << "Podaj id kontaktu: ";
+                        cin >> idToDelete;
+                        contacts = deleteContact(contacts, idToDelete);
+                    } else if(choice == '6') {
+                        system("cls");
+                        cout << "Podaj id kontaktu: ";
+                        cin >> idToEdit;
+                        isMenuActive = isEdit(contacts, idToEdit);
+                        isEditMenuActive = true;
+                    } else if(choice == '7') {
+                        users = editPassword(users, idLoggedUser);
+                    } else if (choice == '8') {
+                        idLoggedUser = 0;
+                    }
+
+                } else {
+                    while(isEditMenuActive) {
+                        system("cls");
+                        cout << "Edytuj:" << endl;
+                        cout << "1. Imie" << endl;
+                        cout << "2. Nazwisko" << endl;
+                        cout << "3. Numer telefonu" << endl;
+                        cout << "4. Email" << endl;
+                        cout << "5. Adres" << endl;
+                        cout << "6. Powrot do menu glownego" << endl;
+                        cout << "Twoj wybor: ";
+                        cin >> choice;
+                        if(choice == '1') {
+                            system("cls");
+                            string editName;
+                            cout << "Podaj nowe imie: ";
+                            cin >> editName;
+                            contacts = editConctact(contacts, idToEdit, choice, editName);
+                        } else if (choice == '2') {
+                            system("cls");
+                            string editSurname;
+                            cout << "Podaj nowe nazwisko: ";
+                            cin >> editSurname;
+                            contacts = editConctact(contacts, idToEdit,choice,editSurname);
+                        } else if (choice == '3') {
+                            system("cls");
+                            string editPhoneNumber;
+                            cout << "Podaj nowy numer telefonu: ";
+                            cin.ignore();
+                            getline(cin, editPhoneNumber);
+                            contacts = editConctact(contacts, idToEdit,choice,editPhoneNumber);
+                        } else if (choice == '4') {
+                            system("cls");
+                            string editEmail;
+                            cout << "Podaj nowy email: ";
+                            cin >> editEmail;
+                            contacts = editConctact(contacts, idToEdit,choice,editEmail);
+                        } else if (choice == '5') {
+                            system("cls");
+                            string editAdress;
+                            cout << "Podaj nowy adres: ";
+                            cin.ignore();
+                            getline(cin, editAdress);
+                            contacts = editConctact(contacts, idToEdit,choice,editAdress);
+                        } else if (choice == '6') {
+                            contacts = contacts;
+                            isEditMenuActive = false;
+                            isMenuActive = true;
+
+                        }
+                    }
                 }
+
             }
+
         }
     }
-
     return 0;
 }
