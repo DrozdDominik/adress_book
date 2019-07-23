@@ -669,6 +669,168 @@ vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice
     }
 }
 
+
+
+
+vector<Contact> editConctact2(vector<Contact> contacts, int idToEdit, char choice, string dataToEdit) {
+    fstream file;
+    fstream tempFile;
+    vector<Contact> tempContacts;
+    string line;
+    Contact singleTempContact;
+    int indexToEdit;
+
+    for(int i = 0; i < contacts.size(); i++) {
+        if(contacts[i].id == idToEdit) {
+            indexToEdit = i;
+        }
+    }
+
+    switch(choice) {
+    case '1':
+        contacts[indexToEdit].name = dataToEdit;
+        break;
+    case '2':
+        contacts[indexToEdit].surname = dataToEdit;
+        break;
+    case '3':
+        contacts[indexToEdit].phoneNumber = dataToEdit;
+        break;
+    case '4':
+        contacts[indexToEdit].email = dataToEdit;
+        break;
+    case '5':
+        contacts[indexToEdit].adress = dataToEdit;
+        break;
+    }
+
+    file.open("contacts.txt", ios::in);
+    if(file.good()) {
+
+            tempFile.open("contacts_temp.txt", ios::out | ios::app);
+            if(tempFile.good()) {
+            while(getline(file, line)){
+            string contact[7];
+            int endOfString = line.length();
+            int index = 0;
+            int beginOfWord = 0;
+            int lengthOfWord = 0;
+            int conctactIndex = 0;
+
+            for(index = 0; index < endOfString; index++) {
+
+                if((int)line[index] == 124) {
+                    lengthOfWord = index - beginOfWord;
+                    contact[conctactIndex] = line.substr(beginOfWord, lengthOfWord);
+                    beginOfWord = index + 1;
+                    conctactIndex++;
+                }
+            }
+            singleTempContact.id = atoi(contact[0].c_str());
+            singleTempContact.userId = atoi(contact[1].c_str());
+            singleTempContact.name = contact[2];
+            singleTempContact.surname = contact[3];
+            singleTempContact.phoneNumber = contact[4];
+            singleTempContact.email = contact[5];
+            singleTempContact.adress = contact[6];
+
+            if(singleTempContact.id != idToEdit) {
+                tempContacts.push_back(singleTempContact);
+            }
+
+
+
+                    }
+              for(int i = 0; i < tempContacts.size(); i++){
+                cout << "temp id: " << tempContacts[i].id << endl;
+                system("pause");
+            }
+
+            cout << "id to edit: " << idToEdit << endl;
+            cout << "contacts.size(): " << contacts.size() << endl;
+            system("pause");
+
+        if(idToEdit > 1) {
+            for(int i = 0; i < tempContacts.size(); i++) {
+
+                if(tempContacts[i].id < idToEdit){
+
+                      cout << "id zapisane: " << tempContacts[i].id << endl;
+                       system("pause");
+
+                tempFile << tempContacts[i].id << "|";
+                tempFile << tempContacts[i].userId << "|";
+                tempFile << tempContacts[i].name << "|";
+                tempFile << tempContacts[i].surname << "|";
+                tempFile << tempContacts[i].phoneNumber << "|";
+                tempFile << tempContacts[i].email << "|";
+                tempFile << tempContacts[i].adress << "|" << endl;
+                }
+            }
+        }
+
+        tempFile << contacts[indexToEdit].id << "|";
+        tempFile << contacts[indexToEdit].userId << "|";
+        tempFile << contacts[indexToEdit].name << "|";
+        tempFile << contacts[indexToEdit].surname << "|";
+        tempFile << contacts[indexToEdit].phoneNumber << "|";
+        tempFile << contacts[indexToEdit].email << "|";
+        tempFile << contacts[indexToEdit].adress << "|" << endl;
+
+        if(idToEdit < tempContacts.size() + 1) {
+            for(int i = 0; i < tempContacts.size(); i++) {
+                 if(tempContacts[i].id > idToEdit){
+                tempFile << tempContacts[i].id << "|";
+                tempFile << tempContacts[i].userId << "|";
+                tempFile << tempContacts[i].name << "|";
+                tempFile << tempContacts[i].surname << "|";
+                tempFile << tempContacts[i].phoneNumber << "|";
+                tempFile << tempContacts[i].email << "|";
+                tempFile << tempContacts[i].adress << "|" << endl;
+            }
+            }
+        }
+        tempFile.close();
+        file.close();
+        system("pause");
+        remove("contacts.txt");
+        rename("contacts_temp.txt", "contacts.txt");
+
+        cout << "Kontakt zedytowany" << endl;
+        Sleep(1500);
+        return contacts;
+    } else {
+        file.close();
+        cout << "Blad odczytu pliku!" << endl;
+        Sleep(1000);
+        return contacts;
+    }
+}else {
+        file.close();
+        cout << "Blad odczytu pliku!" << endl;
+        Sleep(1000);
+        return contacts;
+
+}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int main() {
     vector <User> users;
     vector<Contact> contacts;
@@ -759,33 +921,33 @@ int main() {
                             string editName;
                             cout << "Podaj nowe imie: ";
                             cin >> editName;
-                            contacts = editConctact(contacts, idToEdit, choice, editName);
+                            contacts = editConctact2(contacts, idToEdit, choice, editName);
                         } else if (choice == '2') {
                             system("cls");
                             string editSurname;
                             cout << "Podaj nowe nazwisko: ";
                             cin >> editSurname;
-                            contacts = editConctact(contacts, idToEdit,choice,editSurname);
+                            contacts = editConctact2(contacts, idToEdit,choice,editSurname);
                         } else if (choice == '3') {
                             system("cls");
                             string editPhoneNumber;
                             cout << "Podaj nowy numer telefonu: ";
                             cin.ignore();
                             getline(cin, editPhoneNumber);
-                            contacts = editConctact(contacts, idToEdit,choice,editPhoneNumber);
+                            contacts = editConctact2(contacts, idToEdit,choice,editPhoneNumber);
                         } else if (choice == '4') {
                             system("cls");
                             string editEmail;
                             cout << "Podaj nowy email: ";
                             cin >> editEmail;
-                            contacts = editConctact(contacts, idToEdit,choice,editEmail);
+                            contacts = editConctact2(contacts, idToEdit,choice,editEmail);
                         } else if (choice == '5') {
                             system("cls");
                             string editAdress;
                             cout << "Podaj nowy adres: ";
                             cin.ignore();
                             getline(cin, editAdress);
-                            contacts = editConctact(contacts, idToEdit,choice,editAdress);
+                            contacts = editConctact2(contacts, idToEdit,choice,editAdress);
                         } else if (choice == '6') {
                             contacts = contacts;
                             isEditMenuActive = false;
