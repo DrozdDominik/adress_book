@@ -11,9 +11,56 @@ struct User {
 };
 
 struct Contact {
-    int id;
+    int id, userId;
     string name, surname, phoneNumber, email, adress;
 };
+
+int idOfLastContact(string fileName) {
+    fstream file;
+    char ch = ' ';
+    fileName += ".txt";
+    file.open(fileName.c_str(), ios::in);
+    if(file.is_open()) {
+        file.seekg(0, ios::end);
+        if (file.tellg() == 0) {
+            return 0;
+        } else {file.seekg(-3, ios::end);
+        bool keepLooping = true;
+        while(keepLooping) {
+        file.get(ch);
+         if((int)ch == 10) {
+            keepLooping = false;
+        }else {
+        file.seekg(-3,ios_base::cur);
+        }
+        }
+        char firstChar;
+        file.get(firstChar);
+        int number = (int) firstChar - 48;
+        return number;
+        }
+    } else {
+        cout << "Nie udalo sie otworzyc pliku" << endl;
+        Sleep(1000);
+        exit(0);
+    }
+}
+
+int idOfFirstLine(string fileName) {
+    fstream file;
+    fileName += ".txt";
+    char firstChar;
+    file.open(fileName.c_str(), ios::in);
+    if(file.is_open()) {
+        file.get(firstChar);
+        int number = (int) firstChar - 48;
+        return number;
+    } else {
+        cout << "Nie udalo sie otworzyc pliku" << endl;
+        Sleep(1000);
+        exit(0);
+    }
+}
 
 vector<User> loadUsers(vector<User> users) {
     string line;
@@ -190,7 +237,11 @@ vector<User> editPassword(vector<User> users, int idToEdit) {
     }
 }
 
-vector<Contact> loadData(vector<Contact> contacts) {
+vector<Contact> loadData(vector<Contact> contacts, int idLoggedUser) {
+
+    cout << "LOAD!" << endl;
+    system("pause");
+
     string line;
     int lineNumber = 1;
     fstream file;
@@ -200,7 +251,7 @@ vector<Contact> loadData(vector<Contact> contacts) {
 
     if(file.is_open()) {
         while(getline(file,line)) {
-            string contact[6];
+            string contact[7];
             int endOfString = line.length();
             int index = 0;
             int beginOfWord = 0;
@@ -217,14 +268,16 @@ vector<Contact> loadData(vector<Contact> contacts) {
                 }
             }
             singleContact.id = atoi(contact[0].c_str());
-            singleContact.name = contact[1];
-            singleContact.surname = contact[2];
-            singleContact.phoneNumber = contact[3];
-            singleContact.email = contact[4];
-            singleContact.adress = contact[5];
+            singleContact.userId = atoi(contact[1].c_str());
+            singleContact.name = contact[2];
+            singleContact.surname = contact[3];
+            singleContact.phoneNumber = contact[4];
+            singleContact.email = contact[5];
+            singleContact.adress = contact[6];
 
-            contacts.push_back(singleContact);
-
+            if(singleContact.userId == idLoggedUser) {
+                contacts.push_back(singleContact);
+            }
         }
         file.close();
 
@@ -235,7 +288,7 @@ vector<Contact> loadData(vector<Contact> contacts) {
     }
 }
 
-vector<Contact> addContact(vector<Contact> contacts) {
+vector<Contact> addContact(vector<Contact> contacts, int idLoggedUser) {
     fstream file;
     string name, surname, phoneNumber, adress, email;
     Contact singleContact;
@@ -247,14 +300,22 @@ vector<Contact> addContact(vector<Contact> contacts) {
         file.open("contacts.txt", ios::out);
         file.close();
     }
-
+    string fileName = "contacts";
     int numberOfContacts = contacts.size();
-    int lastId;
-    if(contacts.empty()) {
-        lastId = 0;
-    } else {
-        lastId = contacts[numberOfContacts - 1].id;
+
+    cout << "OK" << endl;
+    cout << contacts.size() << endl;
+    system("pause");
+
+    int lastId = 0;
+    if (contacts.size() == 1) {
+        lastId = idOfFirstLine(fileName);
+    } else{
+        lastId = idOfLastContact(fileName);
     }
+
+    cout << lastId << endl;
+    system("pause");
 
     system("cls");
     cout << "Podaj imie kontaktu: ";
@@ -265,6 +326,7 @@ vector<Contact> addContact(vector<Contact> contacts) {
 
     int i = 0;
     while(i < numberOfContacts) {
+
         if((contacts[i].name == name) && (contacts[i].surname == surname)) {
             cout << "Taki kontakt juz istnieje. Wpisz inne dane: " << endl;
             cout << "Podaj imie kontaktu: ";
@@ -285,13 +347,27 @@ vector<Contact> addContact(vector<Contact> contacts) {
     cin.ignore();
     getline(cin, adress);
 
-    singleContact = {lastId + 1, name, surname, phoneNumber, email, adress};
+    lastId++;
+
+    cout << lastId << endl;
+    system("pause");
+
+    int nextId = lastId;
+
+    cout << nextId << endl;
+    system("pause");
+
+    singleContact = {nextId, idLoggedUser, name, surname, phoneNumber, email, adress};
 
     contacts.push_back(singleContact);
+
+    cout << contacts.size() << endl;
+    system("pause");
 
     file.open("contacts.txt", ios::out | ios::app);
     if(file.good()) {
         file << contacts[numberOfContacts].id << "|";
+        file << contacts[numberOfContacts].userId << "|";
         file << contacts[numberOfContacts].name << "|";
         file << contacts[numberOfContacts].surname << "|";
         file << contacts[numberOfContacts].phoneNumber << "|";
@@ -318,7 +394,9 @@ bool showAllContacts(vector<Contact> contacts) {
         return true;
     } else {
         system("cls");
+
         for(int i = 0; i < contacts.size(); i++) {
+
             cout << "ID: " << contacts[i].id << endl;
             cout << contacts[i].name << " " << contacts[i].surname << endl;
             cout << "Numer telefonu: " << contacts[i].phoneNumber << endl;
@@ -334,9 +412,9 @@ bool showAllContacts(vector<Contact> contacts) {
                 return true;
             }
         }
+
     }
 }
-
 bool searchByName(vector<Contact> contacts) {
     string name;
     char choice = '0';
@@ -579,9 +657,6 @@ int main() {
 
     users = loadUsers(users);
 
-    contacts = loadData(contacts);
-
-
     while(1) {
         if(idLoggedUser == 0) {
             system("cls");
@@ -598,7 +673,11 @@ int main() {
                 exit(0);
             }
         } else {
+
+             contacts = loadData(contacts, idLoggedUser);
+
             while(idLoggedUser != 0) {
+
                 if(isMenuActive) {
                     system("cls");
                     cout << "1. Dodaj nowy kontakt" << endl;
@@ -613,7 +692,7 @@ int main() {
                     cin >> choice;
 
                     if(choice == '1') {
-                        contacts = addContact(contacts);
+                        contacts = addContact(contacts,idLoggedUser);
                     } else if(choice == '2') {
                         isMenuActive = searchByName(contacts);
                     } else if(choice == '3') {
@@ -634,6 +713,7 @@ int main() {
                     } else if(choice == '7') {
                         users = editPassword(users, idLoggedUser);
                     } else if (choice == '8') {
+                        contacts.clear();
                         idLoggedUser = 0;
                     }
 
