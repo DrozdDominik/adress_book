@@ -292,6 +292,7 @@ vector<Contact> addContact(vector<Contact> contacts, int idLoggedUser) {
     fstream file;
     string name, surname, phoneNumber, adress, email;
     Contact singleContact;
+    int numberOfLines = 0;
 
     file.open("contacts.txt");
     if(file.good()) {
@@ -307,10 +308,34 @@ vector<Contact> addContact(vector<Contact> contacts, int idLoggedUser) {
     cout << contacts.size() << endl;
     system("pause");
 
+
+    file.open("contacts.txt", ios::in);
+    if(file.good()) {
+    string line;
+
+    while(getline(file, line)){
+
+    numberOfLines ++;
+    }
+
+        file.close();
+    }else {
+        cout << "Nie udalo sie otworzyc pliku" << endl;
+        Sleep(1000);
+        exit(0);
+    }
+
+    cout << "NumberOfLines: " << numberOfLines << endl;
+    system("pause");
+
     int lastId = 0;
-    if (contacts.size() == 1) {
+    if (contacts.size() == 1 && numberOfLines == 1) {
         lastId = idOfFirstLine(fileName);
-    } else{
+    } else if(contacts.size() == 0 && numberOfLines == 1){
+
+    lastId = idOfFirstLine(fileName);
+
+    }else{
         lastId = idOfLastContact(fileName);
     }
 
