@@ -159,7 +159,7 @@ vector <User> registration(vector <User> users) {
     } else {
         cout << "Nie udalo sie otworzyc pliku" << endl;
         Sleep(1000);
-        exit(0);
+
     }
 
 }
@@ -181,9 +181,9 @@ int LogIn (vector <User> users) {
                     return users[i].id;
                 }
             }
-            cout << "Podales 3 razy bledne haslo. Poczekaj 3 sekundy przed kolejna proba" << endl;
+            cout << "Podales 3 razy bledne haslo. Program konczy dzialanie!" << endl;
             Sleep(3000);
-            return 0;
+            exit(0);
         }
         i++;
     }
@@ -239,9 +239,6 @@ vector<User> editPassword(vector<User> users, int idToEdit) {
 }
 
 vector<Contact> loadData(vector<Contact> contacts, int idLoggedUser) {
-
-    cout << "LOAD!" << endl;
-    system("pause");
 
     string line;
     int lineNumber = 1;
@@ -305,11 +302,6 @@ vector<Contact> addContact(vector<Contact> contacts, int idLoggedUser) {
     string fileName = "contacts";
     int numberOfContacts = contacts.size();
 
-    cout << "OK" << endl;
-    cout << contacts.size() << endl;
-    system("pause");
-
-
     file.open("contacts.txt", ios::in);
     if(file.good()) {
         string line;
@@ -326,9 +318,6 @@ vector<Contact> addContact(vector<Contact> contacts, int idLoggedUser) {
         exit(0);
     }
 
-    cout << "NumberOfLines: " << numberOfLines << endl;
-    system("pause");
-
     int lastId = 0;
     if (contacts.size() == 1 && numberOfLines == 1) {
         lastId = idOfFirstLine(fileName);
@@ -339,9 +328,6 @@ vector<Contact> addContact(vector<Contact> contacts, int idLoggedUser) {
     } else {
         lastId = idOfLastContact(fileName);
     }
-
-    cout << lastId << endl;
-    system("pause");
 
     system("cls");
     cout << "Podaj imie kontaktu: ";
@@ -375,20 +361,11 @@ vector<Contact> addContact(vector<Contact> contacts, int idLoggedUser) {
 
     lastId++;
 
-    cout << lastId << endl;
-    system("pause");
-
     int nextId = lastId;
-
-    cout << nextId << endl;
-    system("pause");
 
     singleContact = {nextId, idLoggedUser, name, surname, phoneNumber, email, adress};
 
     contacts.push_back(singleContact);
-
-    cout << contacts.size() << endl;
-    system("pause");
 
     file.open("contacts.txt", ios::out | ios::app);
     if(file.good()) {
@@ -540,7 +517,6 @@ vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice
             indexToEdit = i;
         }
     }
-
     switch(choice) {
     case '1':
         contacts[indexToEdit].name = dataToEdit;
@@ -596,22 +572,11 @@ vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice
 
 
             }
-            for(int i = 0; i < tempContacts.size(); i++) {
-                cout << "temp id: " << tempContacts[i].id << endl;
-                system("pause");
-            }
-
-            cout << "id to edit: " << idToEdit << endl;
-            cout << "contacts.size(): " << contacts.size() << endl;
-            system("pause");
 
             if(idToEdit > 1) {
                 for(int i = 0; i < tempContacts.size(); i++) {
 
                     if(tempContacts[i].id < idToEdit) {
-
-                        cout << "id zapisane: " << tempContacts[i].id << endl;
-                        system("pause");
 
                         tempFile << tempContacts[i].id << "|";
                         tempFile << tempContacts[i].userId << "|";
@@ -647,7 +612,7 @@ vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice
             }
             tempFile.close();
             file.close();
-            system("pause");
+
             remove("contacts.txt");
             rename("contacts_temp.txt", "contacts.txt");
 
@@ -665,9 +630,7 @@ vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice
         cout << "Blad odczytu pliku!" << endl;
         Sleep(1000);
         return contacts;
-
     }
-
 }
 
 bool isIdValid(vector<Contact> contacts, int idToDelete) {
