@@ -503,20 +503,8 @@ bool isEdit (vector<Contact> contacts, int idToEdit) {
 
 }
 
+vector<Contact> editVectorOfContacts (vector<Contact> contacts, int indexToEdit, char choice, string dataToEdit) {
 
-vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice, string dataToEdit) {
-    fstream file;
-    fstream tempFile;
-    vector<Contact> tempContacts;
-    string line;
-    Contact singleTempContact;
-    int indexToEdit;
-
-    for(int i = 0; i < contacts.size(); i++) {
-        if(contacts[i].id == idToEdit) {
-            indexToEdit = i;
-        }
-    }
     switch(choice) {
     case '1':
         contacts[indexToEdit].name = dataToEdit;
@@ -534,99 +522,115 @@ vector<Contact> editConctact(vector<Contact> contacts, int idToEdit, char choice
         contacts[indexToEdit].adress = dataToEdit;
         break;
     }
+    return contacts;
+}
+
+vector<Contact> createTempVectorOfContacts (vector<Contact> contacts, int id) {
+    fstream file;
+    string line;
+    vector<Contact> tempContacts;
+    Contact singleTempContact;
 
     file.open("contacts.txt", ios::in);
     if(file.good()) {
+        while(getline(file, line)) {
+            string contact[7];
+            int endOfString = line.length();
+            int index = 0;
+            int beginOfWord = 0;
+            int lengthOfWord = 0;
+            int conctactIndex = 0;
 
-        tempFile.open("contacts_temp.txt", ios::out | ios::app);
-        if(tempFile.good()) {
-            while(getline(file, line)) {
-                string contact[7];
-                int endOfString = line.length();
-                int index = 0;
-                int beginOfWord = 0;
-                int lengthOfWord = 0;
-                int conctactIndex = 0;
+            for(index = 0; index < endOfString; index++) {
 
-                for(index = 0; index < endOfString; index++) {
-
-                    if((int)line[index] == 124) {
-                        lengthOfWord = index - beginOfWord;
-                        contact[conctactIndex] = line.substr(beginOfWord, lengthOfWord);
-                        beginOfWord = index + 1;
-                        conctactIndex++;
-                    }
-                }
-                singleTempContact.id = atoi(contact[0].c_str());
-                singleTempContact.userId = atoi(contact[1].c_str());
-                singleTempContact.name = contact[2];
-                singleTempContact.surname = contact[3];
-                singleTempContact.phoneNumber = contact[4];
-                singleTempContact.email = contact[5];
-                singleTempContact.adress = contact[6];
-
-                if(singleTempContact.id != idToEdit) {
-                    tempContacts.push_back(singleTempContact);
-                }
-
-
-
-            }
-
-            if(idToEdit > 1) {
-                for(int i = 0; i < tempContacts.size(); i++) {
-
-                    if(tempContacts[i].id < idToEdit) {
-
-                        tempFile << tempContacts[i].id << "|";
-                        tempFile << tempContacts[i].userId << "|";
-                        tempFile << tempContacts[i].name << "|";
-                        tempFile << tempContacts[i].surname << "|";
-                        tempFile << tempContacts[i].phoneNumber << "|";
-                        tempFile << tempContacts[i].email << "|";
-                        tempFile << tempContacts[i].adress << "|" << endl;
-                    }
+                if((int)line[index] == 124) {
+                    lengthOfWord = index - beginOfWord;
+                    contact[conctactIndex] = line.substr(beginOfWord, lengthOfWord);
+                    beginOfWord = index + 1;
+                    conctactIndex++;
                 }
             }
+            singleTempContact.id = atoi(contact[0].c_str());
+            singleTempContact.userId = atoi(contact[1].c_str());
+            singleTempContact.name = contact[2];
+            singleTempContact.surname = contact[3];
+            singleTempContact.phoneNumber = contact[4];
+            singleTempContact.email = contact[5];
+            singleTempContact.adress = contact[6];
 
-            tempFile << contacts[indexToEdit].id << "|";
-            tempFile << contacts[indexToEdit].userId << "|";
-            tempFile << contacts[indexToEdit].name << "|";
-            tempFile << contacts[indexToEdit].surname << "|";
-            tempFile << contacts[indexToEdit].phoneNumber << "|";
-            tempFile << contacts[indexToEdit].email << "|";
-            tempFile << contacts[indexToEdit].adress << "|" << endl;
-
-            if(idToEdit < tempContacts.size() + 1) {
-                for(int i = 0; i < tempContacts.size(); i++) {
-                    if(tempContacts[i].id > idToEdit) {
-                        tempFile << tempContacts[i].id << "|";
-                        tempFile << tempContacts[i].userId << "|";
-                        tempFile << tempContacts[i].name << "|";
-                        tempFile << tempContacts[i].surname << "|";
-                        tempFile << tempContacts[i].phoneNumber << "|";
-                        tempFile << tempContacts[i].email << "|";
-                        tempFile << tempContacts[i].adress << "|" << endl;
-                    }
-                }
+            if(singleTempContact.id != id) {
+                tempContacts.push_back(singleTempContact);
             }
-            tempFile.close();
-            file.close();
-
-            remove("contacts.txt");
-            rename("contacts_temp.txt", "contacts.txt");
-
-            cout << "Kontakt zedytowany" << endl;
-            Sleep(1500);
-            return contacts;
-        } else {
-            file.close();
-            cout << "Blad odczytu pliku!" << endl;
-            Sleep(1000);
-            return contacts;
         }
+        return tempContacts;
     } else {
         file.close();
+        cout << "Blad odczytu pliku!" << endl;
+        Sleep(1000);
+        return contacts;
+    }
+}
+
+vector<Contact> editConctact (vector<Contact> contacts, int idToEdit, char choice, string dataToEdit) {
+    fstream tempFile;
+    vector<Contact> tempContacts;
+    int indexToEdit;
+
+    for(int i = 0; i < contacts.size(); i++) {
+        if(contacts[i].id == idToEdit) {
+            indexToEdit = i;
+        }
+    }
+    contacts = editVectorOfContacts(contacts, indexToEdit, choice, dataToEdit);
+
+    tempFile.open("contacts_temp.txt", ios::out | ios::app);
+    if(tempFile.good()) {
+
+        tempContacts = createTempVectorOfContacts(contacts, idToEdit);
+
+        if(idToEdit > 1) {
+            for(int i = 0; i < tempContacts.size(); i++) {
+
+                if(tempContacts[i].id < idToEdit) {
+                    tempFile << tempContacts[i].id << "|";
+                    tempFile << tempContacts[i].userId << "|";
+                    tempFile << tempContacts[i].name << "|";
+                    tempFile << tempContacts[i].surname << "|";
+                    tempFile << tempContacts[i].phoneNumber << "|";
+                    tempFile << tempContacts[i].email << "|";
+                    tempFile << tempContacts[i].adress << "|" << endl;
+                }
+            }
+        }
+        tempFile << contacts[indexToEdit].id << "|";
+        tempFile << contacts[indexToEdit].userId << "|";
+        tempFile << contacts[indexToEdit].name << "|";
+        tempFile << contacts[indexToEdit].surname << "|";
+        tempFile << contacts[indexToEdit].phoneNumber << "|";
+        tempFile << contacts[indexToEdit].email << "|";
+        tempFile << contacts[indexToEdit].adress << "|" << endl;
+
+        if(idToEdit < tempContacts.size() + 1) {
+            for(int i = 0; i < tempContacts.size(); i++) {
+                if(tempContacts[i].id > idToEdit) {
+                    tempFile << tempContacts[i].id << "|";
+                    tempFile << tempContacts[i].userId << "|";
+                    tempFile << tempContacts[i].name << "|";
+                    tempFile << tempContacts[i].surname << "|";
+                    tempFile << tempContacts[i].phoneNumber << "|";
+                    tempFile << tempContacts[i].email << "|";
+                    tempFile << tempContacts[i].adress << "|" << endl;
+                }
+            }
+        }
+        tempFile.close();
+        remove("contacts.txt");
+        rename("contacts_temp.txt", "contacts.txt");
+        cout << "Kontakt zedytowany" << endl;
+        Sleep(1500);
+        return contacts;
+    } else {
+        tempFile.close();
         cout << "Blad odczytu pliku!" << endl;
         Sleep(1000);
         return contacts;
@@ -643,90 +647,52 @@ bool isIdValid(vector<Contact> contacts, int idToDelete) {
     return false;
 }
 
-vector<Contact> deleteContact(vector<Contact> contacts, int idToDelete) {
+vector<Contact> deleteContactFromVector (vector<Contact> contacts, int idToDelete) {
+    int indexToDelete = 0;
+    for(int i = 0; i < contacts.size(); i++) {
+        if(contacts[i].id == idToDelete) {
+            indexToDelete = i;
+        }
+    }
+    contacts.erase(contacts.begin() + indexToDelete);
+    return contacts;
+}
 
+vector<Contact> deleteContact(vector<Contact> contacts, int idToDelete) {
     char choice;
-    fstream file;
     fstream tempFile;
     vector<Contact> tempContacts;
-    string line;
-    Contact singleTempContact;
 
     bool validId = isIdValid(contacts, idToDelete);
     if(validId) {
-
         cout << "Czy na pewno chcesz usunac ten kontakt? Aby potwierdzic wybierz <t>" << endl;
         cin >> choice;
         if(choice == 't') {
-            file.open ("contacts.txt", ios::in);
-            if(file.good()) {
-                tempFile.open("temp.txt", ios::out);
-                if(tempFile.good()) {
-                    while(getline(file, line)) {
-                        string contact[7];
-                        int endOfString = line.length();
-                        int index = 0;
-                        int beginOfWord = 0;
-                        int lengthOfWord = 0;
-                        int conctactIndex = 0;
+            tempContacts = createTempVectorOfContacts(contacts, idToDelete);
 
-                        for(index = 0; index < endOfString; index++) {
-
-                            if((int)line[index] == 124) {
-                                lengthOfWord = index - beginOfWord;
-                                contact[conctactIndex] = line.substr(beginOfWord, lengthOfWord);
-                                beginOfWord = index + 1;
-                                conctactIndex++;
-                            }
-                        }
-                        singleTempContact.id = atoi(contact[0].c_str());
-                        singleTempContact.userId = atoi(contact[1].c_str());
-                        singleTempContact.name = contact[2];
-                        singleTempContact.surname = contact[3];
-                        singleTempContact.phoneNumber = contact[4];
-                        singleTempContact.email = contact[5];
-                        singleTempContact.adress = contact[6];
-
-                        if(singleTempContact.id != idToDelete) {
-                            tempContacts.push_back(singleTempContact);
-                        }
-                    }
-                    for(int i = 0; i < tempContacts.size(); i++) {
-                        tempFile << tempContacts[i].id << "|";
-                        tempFile << tempContacts[i].userId << "|";
-                        tempFile << tempContacts[i].name << "|";
-                        tempFile << tempContacts[i].surname << "|";
-                        tempFile << tempContacts[i].phoneNumber << "|";
-                        tempFile << tempContacts[i].email << "|";
-                        tempFile << tempContacts[i].adress << "|" << endl;
-                    }
-
-                    tempFile.close();
-                    file.close();
-                    remove("contacts.txt");
-                    rename("temp.txt", "contacts.txt");
-
-                    int indexToDelete = 0;
-                    for(int i = 0; i < contacts.size(); i++) {
-                        if(contacts[i].id == idToDelete) {
-                            indexToDelete = i;
-                        }
-                    }
-                    contacts.erase(contacts.begin() + indexToDelete);
-
-                    cout << "Kontakt usuniety!" << endl;
-                    Sleep(1000);
-                    return contacts;
-
-                } else {
-                    tempFile.close();
-                    cout << "Blad odczytu pliku!" << endl;
-                    Sleep(1000);
-                    return contacts;
+            tempFile.open("temp.txt", ios::out);
+            if(tempFile.good()) {
+                for(int i = 0; i < tempContacts.size(); i++) {
+                    tempFile << tempContacts[i].id << "|";
+                    tempFile << tempContacts[i].userId << "|";
+                    tempFile << tempContacts[i].name << "|";
+                    tempFile << tempContacts[i].surname << "|";
+                    tempFile << tempContacts[i].phoneNumber << "|";
+                    tempFile << tempContacts[i].email << "|";
+                    tempFile << tempContacts[i].adress << "|" << endl;
                 }
+                tempFile.close();
+                remove("contacts.txt");
+                rename("temp.txt", "contacts.txt");
+
+                contacts = deleteContactFromVector(contacts, idToDelete);
+
+                cout << "Kontakt usuniety!" << endl;
+                Sleep(1000);
+                return contacts;
 
             } else {
-                file.close();
+                tempFile.close();
                 cout << "Blad odczytu pliku!" << endl;
                 Sleep(1000);
                 return contacts;
