@@ -288,11 +288,12 @@ Contact loadSingleContact(string singleContactData) {
 vector<Contact> loadContactsFromFile(vector<Contact> contacts, int idLoggedUser) {
     Contact singleContact;
     string singleContactData = "";
-
     fstream file;
+
     file.open("contacts.txt", ios::in);
 
     if (file.good() == true) {
+
         while (getline(file, singleContactData)) {
             singleContact = loadSingleContact(singleContactData);
 
@@ -300,9 +301,11 @@ vector<Contact> loadContactsFromFile(vector<Contact> contacts, int idLoggedUser)
                 contacts.push_back(singleContact);
             }
         }
-        return contacts;
         file.close();
+        return contacts;
+
     }
+    return contacts;
 }
 
 void writeAllContactsToFile(vector<Contact> contacts, string fileName) {
@@ -584,8 +587,9 @@ vector<Contact> createTempVectorOfContacts (int id) {
                 tempContacts.push_back(singleContact);
             }
         }
-        return tempContacts;
         file.close();
+        return tempContacts;
+
     }
 }
 
